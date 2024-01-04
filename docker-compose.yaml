@@ -1,0 +1,45 @@
+version: "3.9"
+
+services:
+  product-service:
+    build:
+      context: ./productService
+      dockerfile: Dockerfile
+    hostname: product-service
+    container_name: product-service
+    restart: unless-stopped
+    depends_on:
+      - db_product-service
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./productService/.env
+    volumes:
+      - ./productService:/home/app
+      - poetry-cache:/root/.cache/pypoetry
+    networks:
+      - e-commerce
+
+  db_product-service:
+    image: postgres:14.3-alpine
+    hostname: db_product-service
+    container_name: db_product-service
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - db-product-service:/var/lib/postgresql/data
+    networks:
+      - e-commerce
+
+volumes:
+  db-product-service:
+    driver: local
+  poetry-cache:
+
+networks:
+  e-commerce:
+    external: true
