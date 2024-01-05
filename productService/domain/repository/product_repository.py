@@ -26,9 +26,9 @@ class ProductRepository:
         return [ProductRead(**product.dict()) for product in results]
 
     async def create(self, product_create: ProductCreate) -> ProductRead:
-        db_production = Product.from_orm(product_create)
-        self._session.add(db_production)
+        db_product = Product.from_orm(product_create)
+        self._session.add(db_product)
         await self._session.commit()
-        await self._session.refresh(db_production)
+        await self._session.refresh(db_product)
 
-        return ProductRead(**db_production.dict())
+        return ProductRead(**db_product.dict())

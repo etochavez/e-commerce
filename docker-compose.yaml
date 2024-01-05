@@ -65,12 +65,14 @@ services:
     ports:
       - "5433:5432"
     volumes:
-      - db-product-service:/var/lib/postgresql/data
+      - db-hopping-cart-service:/var/lib/postgresql/data
     networks:
       - e-commerce
 
 volumes:
   db-product-service:
+    driver: local
+  db-hopping-cart-service:
     driver: local
   poetry-product-service-cache:
   poetry-shopping-cart-service-cache:
