@@ -33,4 +33,4 @@ def create_transaction():
 def create_tables():
     SQLModel.metadata.drop_all(engine)
     SQLModel.metadata.create_all(engine)
-    create_transaction()
+    # create_transaction()
