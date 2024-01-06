@@ -2,6 +2,7 @@ from fastapi import FastAPI, status, Depends, HTTPException
 
 from db.sessions import create_tables
 from domain.exceptions.entity_does_not_exist import EntityDoesNotExist
+from domain.repository.cart_item_repository import CartItemRepository
 from domain.repository.cart_repository import CartRepository
 from infraestructure.dependencies.repository import get_repository
 from infraestructure.schemas.cart_items import CartItemRead, CartItemCreate
@@ -17,18 +18,16 @@ app = FastAPI()
 )
 async def add_item(
         item: CartItemCreate,
-        cart_repository: CartRepository = Depends(get_repository(CartRepository))
+        cart_repository: CartRepository = Depends(get_repository(CartRepository)),
+        cart_item_repository: CartItemRepository = Depends(get_repository(CartItemRepository)),
 ):
-    try:
-        cart = await cart_repository.get(item.user_id)
-    except EntityDoesNotExist:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Cart not found!"
-        )
+    cart = await cart_repository.get(item.user_id)
+    if not cart:
+        cart = await cart_repository.create(item.user_id)
 
-    return item.__dict__
-    # if item.user_id not in carts_db:
-    #     carts_db[item.user_id] = ShoppingCart(user_id=item.user_id, items=[])
+    cart_item = await cart_item_repository.create(item, cart.id)
+
+    return cart_item
     #
     # # Check inventory using gRPC call
     # inventory_request = payment_pb2.InventoryCheckRequest(productId=item.product_id)
