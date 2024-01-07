@@ -3,8 +3,8 @@ version: "3.9"
 services:
   product-service:
     build:
-      context: ./productService
-      dockerfile: Dockerfile
+      context: ./services/productService
+      dockerfile: ./Dockerfile
     hostname: product-service
     container_name: product-service
     restart: unless-stopped
@@ -13,9 +13,9 @@ services:
     ports:
       - "8000:8000"
     env_file:
-      - ./productService/.env
+      - ./services/productService/.env
     volumes:
-      - ./productService:/home/app
+      - ./services/productService:/home/app
       - poetry-product-service-cache:/root/.cache/pypoetry
     networks:
       - e-commerce
@@ -37,8 +37,8 @@ services:
 
   shopping-cart-service:
     build:
-      context: ./shoppingCartService
-      dockerfile: Dockerfile
+      context: ./services/shoppingCartService
+      dockerfile: ./Dockerfile
     hostname: shopping-cart-service
     container_name: shopping-cart-service
     restart: unless-stopped
@@ -47,9 +47,9 @@ services:
     ports:
       - "8001:8000"
     env_file:
-      - ./shoppingCartService/.env
+      - ./services/shoppingCartService/.env
     volumes:
-      - ./shoppingCartService:/home/app
+      - ./services/shoppingCartService:/home/app
       - poetry-shopping-cart-service-cache:/root/.cache/pypoetry
     networks:
       - e-commerce
