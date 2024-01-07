@@ -11,10 +11,10 @@ class CartItemBase(SQLModel):
         nullable=False,
     )
     quantity: int = Field(nullable=False, gt=0)
-    cart_id: int = Field(default=None, nullable=False, foreign_key="carts.id")
 
 
 class CartItem(CartItemBase, TimestampModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
+    cart_id: int = Field(default=None, nullable=False, foreign_key="carts.id")
 
     __tablename__ = "cart_items"
