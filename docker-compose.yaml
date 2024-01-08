@@ -69,6 +69,26 @@ services:
     networks:
       - e-commerce
 
+  inventory_service:
+    build: 
+      context: ./services/inventoryService
+      dockerfile: ./Dockerfile
+    hostname: inventory_service
+    container_name: inventory_service
+    restart: unless-stopped
+    # depends_on:
+    #   - postgres-db
+    ports:
+      - "50051:50051"
+    command: sh -c "python main.py"
+    env_file:
+      - ./services/inventoryService/.env
+    volumes:
+      - ./services/inventoryService:/home/app
+      - poetry-inventory-service-cache:/root/.cache/pypoetry
+    networks:
+      - e-commerce
+
 volumes:
   db-product-service:
     driver: local
@@ -76,6 +96,7 @@ volumes:
     driver: local
   poetry-product-service-cache:
   poetry-shopping-cart-service-cache:
+  poetry-inventory-service-cache:
 
 networks:
   e-commerce:
