@@ -8,11 +8,13 @@ ENV PYTHONUNBUFFERED=1 \
 WORKDIR /home/app
 COPY ./pyproject.toml ./poetry.lock* ./
 COPY ./protobuf ./protobuf
+COPY ./infra-scripts ./infra-scripts
 
 RUN pip install poetry
 RUN poetry config virtualenvs.create false
 RUN poetry install --no-interaction
 
-RUN python3 -m grpc_tools.protoc -I ./protobuf --python_out=. --grpc_python_out=. inventory.proto
+RUN ["chmod", "+x", "./infra-scripts/ggen"]
+RUN ./infra-scripts/ggen
 
 CMD [ "python", "main.py" ]

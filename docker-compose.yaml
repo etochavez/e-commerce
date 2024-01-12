@@ -89,10 +89,27 @@ services:
     networks:
       - e-commerce
 
+  db_inventory-service:
+    image: mongo:7-jammy
+    hostname: db_inventory-service
+    container_name: db_inventory-service
+    restart: unless-stopped
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=mongo
+      - MONGO_INITDB_ROOT_PASSWORD=mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - db-inventory-service:/data/db
+    networks:
+      - e-commerce
+
 volumes:
   db-product-service:
     driver: local
   db-hopping-cart-service:
+    driver: local
+  db-inventory-service:
     driver: local
   poetry-product-service-cache:
   poetry-shopping-cart-service-cache:

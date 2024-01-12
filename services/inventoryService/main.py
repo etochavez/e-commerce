@@ -1,42 +1,56 @@
+import asyncio
 import grpc
-import logging
-import time
 from concurrent import futures
 import inventory_pb2_grpc
 import inventory_pb2
+from application.models.product import ProductModel
+from application.schemas.product import ProductBase, ProductUpdate
+from domain.services.product_service import ProductService
 
 
 class InventoryServicer(inventory_pb2_grpc.InventoryServiceServicer):
     def __init__(self):
-        self.product_inventory = {"123": 1, "456": 2, "789": 3}
+        self._product_service = ProductService()
 
-    def CheckInventory(self, request, context):
-        product_id = request.product_id
-        quantity = self.product_inventory.get(product_id, 0)
+    async def CheckInventory(self, request, context):
+        try:
+            product = ProductBase(uuid=request.product_id)
+            quantity = await self._product_service.get_quantity(product.uuid)
+        except Exception as e:
+            quantity = -1
 
         return inventory_pb2.CheckInventoryResponse(quantity=quantity)
 
-    def UpdateInventory(self, request, context):
-        product_id = request.product_id
-        quantity = request.quantity
+    async def UpdateInventory(self, request, context):
+        product_update = ProductUpdate(
+            uuid=request.product_id,
+            quantity=request.quantity
+        )
+        product = ProductModel(
+            uuid=product_update.uuid.hex,
+            quantity=product_update.quantity
+        )
 
-        if quantity < 0:
-            return inventory_pb2.UpdateInventoryResponse(success=False)
+        success = True
 
-        self.product_inventory[product_id] = quantity
-        return inventory_pb2.UpdateInventoryResponse(success=True)
+        try:
+            await self._product_service.update_or_create(product)
+        except Exception as e:
+            success = False
+
+        return inventory_pb2.UpdateInventoryResponse(success=success)
 
 
-server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
+async def serve():
+    server = grpc.aio.server(futures.ThreadPoolExecutor(max_workers=10))
+    inventory_pb2_grpc.add_InventoryServiceServicer_to_server(InventoryServicer(), server)
+    server.add_insecure_port('[::]:50051')
+    await server.start()
 
-inventory_pb2_grpc.add_InventoryServiceServicer_to_server(InventoryServicer(), server)
+    try:
+        await server.wait_for_termination()
+    except KeyboardInterrupt:
+        server.stop(0)
 
-server.add_insecure_port('[::]:50051')
-server.start()
-logging.info("Server started on port 50051")
-
-try:
-    while True:
-        time.sleep(86400)
-except KeyboardInterrupt:
-    server.stop(0)
+if __name__ == '__main__':
+    asyncio.run(serve())
