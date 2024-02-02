@@ -69,15 +69,15 @@ services:
     networks:
       - e-commerce
 
-  inventory_service:
+  inventory-service:
     build: 
       context: ./services/inventoryService
       dockerfile: ./Dockerfile
-    hostname: inventory_service
-    container_name: inventory_service
+    hostname: inventory-service
+    container_name: inventory-service
     restart: unless-stopped
-    # depends_on:
-    #   - postgres-db
+    depends_on:
+      - db_inventory-service
     ports:
       - "50051:50051"
     command: sh -c "python main.py"
